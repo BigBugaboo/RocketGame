@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">火箭飞天</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="info">点击屏幕左右控制火箭移动，长按加快移动。</string>
+    <string name="award">获取到这个可释放一次全屏秒杀</string>
+    <string name="warn">不一定升级就好</string>
+    <string name="danger">碰到敌人会死的哇</string>
+
+</resources>
