@@ -45,6 +45,8 @@ public class GameActivity extends Activity {
                 R.drawable.rocket_go,
                 R.drawable.buy,
                 R.drawable.buy_ing,
+                R.drawable.bigmoney,
+                R.drawable.money,
         };
         gameView.start(bitmapIds);
     }

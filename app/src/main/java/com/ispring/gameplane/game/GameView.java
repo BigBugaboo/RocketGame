@@ -45,14 +45,17 @@ public class GameView extends View {
     //14:rocket_go
     //15:buy
     //16:buy_ing
+    //17.BigMoney
+    //18.money
     private List<Bitmap> bitmaps = new ArrayList<Bitmap>();
     private float density = getResources().getDisplayMetrics().density;//屏幕密度
     public static final int STATUS_GAME_STARTED = 1;//游戏开始
     public static final int STATUS_GAME_PAUSED = 2;//游戏暂停
     public static final int STATUS_GAME_OVER = 3;//游戏结束
     public static final int STATUS_GAME_DESTROYED = 4;//游戏销毁
-    public static final int STATUS_GAME_BUYUPGRADE = 5;//升LV2级
-    public static final int STATUS_GAME_BUYFINALUPGRADE= 6;//升LV3级
+    public static final int STATUS_GAME_BUYUPGRADE = 5;//购买
+    public static final int STATUS_GAME_BUYLV_1= 6;//购买LV1
+    public static final int STATUS_GAME_BUYLV_2 = 7;//购买LV2
     private int status = STATUS_GAME_DESTROYED;//初始为销毁状态
     private long frame = 0;//总共绘制的帧数
     private long score = 0;//总得分
@@ -142,7 +145,18 @@ public class GameView extends View {
         //将游戏设置为暂停状态
         status = STATUS_GAME_PAUSED;
     }
-
+    public void buying(){
+        //将游戏设置为购买暂停状态
+        status = STATUS_GAME_BUYUPGRADE;
+    }
+    public void buyLv1(){
+        //将游戏设置为购买1级状态
+        status = STATUS_GAME_BUYLV_1;
+    }
+    public void buyLv2(){
+        //将游戏设置为购买2级状态
+        status = STATUS_GAME_BUYLV_2;
+    }
     private void resume(){
         //将游戏设置为运行状态
         status = STATUS_GAME_STARTED;
@@ -170,9 +184,7 @@ public class GameView extends View {
         }else if(status == STATUS_GAME_PAUSED){
             drawGamePaused(canvas);
         }else if(status == STATUS_GAME_BUYUPGRADE){
-
-        }else if(status == STATUS_GAME_BUYFINALUPGRADE){
-
+            drawGameBuy(canvas);
         }else if(status == STATUS_GAME_OVER){
             drawGameOver(canvas);
         }
@@ -208,7 +220,7 @@ public class GameView extends View {
         }
         frame++;
 
-        //遍历sprites，绘制敌机、子弹、奖励、爆炸效果
+        //遍历sprites，绘制敌机、子弹、金币、奖励、爆炸效果
         Iterator<Sprite> iterator = sprites.iterator();
         while (iterator.hasNext()){
             Sprite s = iterator.next();
@@ -250,7 +262,26 @@ public class GameView extends View {
         }
 
         //绘制Dialog，显示得分
-        drawScoreDialog(canvas, "继续");
+        drawBuyDialog(canvas, "继续");
+
+        if(lastSingleClickTime > 0){
+            postInvalidate();
+        }
+    }
+    //绘制商店状态的游戏
+    private void drawGameBuy(Canvas canvas){
+        drawScoreAndBombs(canvas);
+
+        //调用Sprite的onDraw方法，而非draw方法，这样就能渲染静态的Sprite，而不让Sprite改变位置
+        for(Sprite s : sprites){
+            s.onDraw(canvas, paint, this);
+        }
+        if(combatAircraft != null){
+            combatAircraft.onDraw(canvas, paint, this);
+        }
+
+        //绘制Dialog，显示商店
+        drawBuyDialog(canvas, "继续");
 
         if(lastSingleClickTime > 0){
             postInvalidate();
@@ -266,7 +297,95 @@ public class GameView extends View {
             postInvalidate();
         }
     }
+    private void drawBuyDialog(Canvas canvas, String operation){
+        int canvasWidth = canvas.getWidth();
+        int canvasHeight = canvas.getHeight();
+        //存储原始值
+        float originalFontSize = textPaint.getTextSize();
+        Paint.Align originalFontAlign = textPaint.getTextAlign();
+        int originalColor = paint.getColor();
+        Paint.Style originalStyle = paint.getStyle();
+        /*
+        W = 360
+        w1 = 20
+        w2 = 320
+        buttonWidth = 140
+        buttonHeight = 42
+        H = 558
+        h1 = 150
+        h2 = 60
+        h3 = 124
+        h4 = 76
+        */
+        int w1 = (int)(20.0 / 360.0 * canvasWidth);
+        int w2 = canvasWidth - 2 * w1;
+        int buttonWidth = (int)(140.0 / 360.0 * canvasWidth);
 
+        int h1 = (int)(150.0 / 558.0 * canvasHeight);
+        int h2 = (int)(60.0 / 558.0 * canvasHeight);
+        int h3 = (int)(124.0 / 558.0 * canvasHeight);
+        int h4 = (int)(76.0 / 558.0 * canvasHeight);
+        int buttonHeight = (int)(42.0 / 558.0 * canvasHeight);
+
+        canvas.translate(w1, h1);
+        //绘制背景色
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(0xFFD7DDDE);
+        Rect rect1 = new Rect(0, 0, w2, canvasHeight - 2 * h1);
+        canvas.drawRect(rect1, paint);
+        //绘制边框
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(0xFF515151);
+        paint.setStrokeWidth(borderSize);
+        //paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        canvas.drawRect(rect1, paint);
+        //绘制文本"商店"
+        textPaint.setTextSize(fontSize2);
+        textPaint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText("商店", w2 / 2, (h2 - fontSize2) / 2 + fontSize2, textPaint);
+        //绘制"商店"下面的横线
+        canvas.translate(0, h2);
+        canvas.drawLine(0, 0, w2, 0, paint);
+        //绘制商店的LV1物品
+        Bitmap LvOneBitmap = bitmaps.get(13);
+        RectF getBuyLvOneBitmapDstRecF = getBuyLvOneBitmapDstRecF();
+        float LvOneLeft = getBuyLvOneBitmapDstRecF.left;
+        float LvOneTop = getBuyLvOneBitmapDstRecF.top;
+        canvas.drawBitmap(LvOneBitmap, LvOneLeft, LvOneTop, paint);
+        canvas.drawText("等级 1", w2 / 2, (h3 - fontSize2) / 2 + fontSize2, textPaint);
+        //绘制商店的LV2物品
+        Bitmap LvTwoBitmap = bitmaps.get(14);
+        RectF getBuyLvTwoBitmapDstRecF = getBuyLvTwoBitmapDstRecF();
+        float LvTwoLeft = getBuyLvTwoBitmapDstRecF.left;
+        float LvTwoTop = getBuyLvTwoBitmapDstRecF.top;
+        canvas.drawBitmap(LvTwoBitmap, LvTwoLeft, LvTwoTop, paint);
+        canvas.drawText("等级 2", w2 / 2, (h3 - fontSize2) / 2 + fontSize2, textPaint);
+        //绘制分数下面的横线
+        canvas.translate(0, h3);
+        canvas.drawLine(0, 0, w2, 0, paint);
+        //绘制按钮边框
+        Rect rect2 = new Rect();
+        rect2.left = (w2 - buttonWidth) / 2;
+        rect2.right = w2 - rect2.left;
+        rect2.top = (h4 - buttonHeight) / 2;
+        rect2.bottom = h4 - rect2.top;
+        canvas.drawRect(rect2, paint);
+        //绘制文本"继续"或"重新开始"
+        canvas.translate(0, rect2.top);
+        canvas.drawText(operation, w2 / 2, (buttonHeight - fontSize2) / 2 + fontSize2, textPaint);
+        continueRect = new Rect(rect2);
+        continueRect.left = w1 + rect2.left;
+        continueRect.right = continueRect.left + buttonWidth;
+        continueRect.top = h1 + h2 + h3 + rect2.top;
+        continueRect.bottom = continueRect.top + buttonHeight;
+
+        //重置
+        textPaint.setTextSize(originalFontSize);
+        textPaint.setTextAlign(originalFontAlign);
+        paint.setColor(originalColor);
+        paint.setStyle(originalStyle);
+    }
     private void drawScoreDialog(Canvas canvas, String operation){
         int canvasWidth = canvas.getWidth();
         int canvasHeight = canvas.getHeight();
@@ -355,7 +474,7 @@ public class GameView extends View {
         float pauseTop = pauseBitmapDstRecF.top;
         canvas.drawBitmap(pauseBitmap, pauseLeft, pauseTop, paint);
         //绘制右上角的商店按钮
-        Bitmap buyBitmap = status == STATUS_GAME_STARTED ?bitmaps.get(15):bitmaps.get(16);
+        Bitmap buyBitmap = status == STATUS_GAME_STARTED ? bitmaps.get(15):bitmaps.get(16);
         RectF getBuyBitmapDstRecF = getBuyBitmapDstRecF();
         float buyLeft = getBuyBitmapDstRecF.left;
         float buyTop = getBuyBitmapDstRecF.top;
@@ -368,7 +487,8 @@ public class GameView extends View {
         //绘制左下角
         if(combatAircraft != null && !combatAircraft.isDestroyed()){
             int bombCount = combatAircraft.getBombCount();
-            if(bombCount > 0){
+            int bigMoneyCount = combatAircraft.getBigMoneyCount();
+            if(bombCount > 0) {
                 //绘制左下角的炸弹
                 Bitmap bombBitmap = bitmaps.get(11);
                 float bombTop = canvas.getHeight() - bombBitmap.getHeight();
@@ -377,6 +497,16 @@ public class GameView extends View {
                 float bombCountLeft = bombBitmap.getWidth() + 10 * density;
                 float bombCountTop = fontSize + bombTop + bombBitmap.getHeight() / 2 - fontSize / 2;
                 canvas.drawText("X " + bombCount, bombCountLeft, bombCountTop, textPaint);
+            }
+            if(bigMoneyCount > 0){
+                //绘制左下角的金币
+                Bitmap bigMoneyBitmap = bitmaps.get(18);
+                float bigMoneyTop = canvas.getHeight() - bigMoneyBitmap.getHeight();
+                canvas.drawBitmap(bigMoneyBitmap, 25, bigMoneyTop, paint);
+                //绘制左下角的金币数量
+                float bigMoneyCountLeft = bigMoneyBitmap.getWidth() + 10 * density;
+                float bigMoneyCountTop = fontSize + bigMoneyTop + bigMoneyBitmap.getHeight() / 2 - fontSize / 2;
+                canvas.drawText("X " + bigMoneyCount, bigMoneyCountLeft, bigMoneyCountTop, textPaint);
             }
         }
     }
@@ -418,9 +548,12 @@ public class GameView extends View {
                 //发送炸弹
                 sprite = new BombAward(bitmaps.get(7));
             }
-            else{
+            else if((callTime + 1) % 50 == 1){
                 //发送双子弹
                 sprite = new BulletAward(bitmaps.get(8));
+            }else{
+                //发送金币
+                sprite = new BigMoneyAward(bitmaps.get(17));
             }
         }
         else{
@@ -494,6 +627,10 @@ public class GameView extends View {
             if(lastSingleClickTime > 0){
                 postInvalidate();
             }
+        }else if(status == STATUS_GAME_BUYUPGRADE){
+            if(lastSingleClickTime > 0){
+                postInvalidate();
+            }
         }else if(status == STATUS_GAME_OVER){
             if(lastSingleClickTime > 0){
                 postInvalidate();
@@ -556,7 +693,6 @@ public class GameView extends View {
         if(lastSingleClickTime > 0){
             //计算当前时刻距离上次发生单击事件的时间差
             long deltaTime = System.currentTimeMillis() - lastSingleClickTime;
-
             if(deltaTime >= doubleClickDurationTime){
                 //如果时间差超过了一次双击事件所需要的时间差，
                 //那么就在此刻延迟触发之前本该发生的单击事件
@@ -575,6 +711,9 @@ public class GameView extends View {
             if(isClickPause(x, y)){
                 //单击了暂停按钮
                 pause();
+            }else if(isClickBuy(x,y)){
+                //单击了商店按钮
+                buying();
             }
         }else if(status == STATUS_GAME_PAUSED){
             if(isClickContinueButton(x, y)){
@@ -582,12 +721,15 @@ public class GameView extends View {
                 resume();
             }
         }else if(status == STATUS_GAME_BUYUPGRADE) {
-            if(isClickBuy(x,y,1)){
-                pause();
-            }
-        }else if(status == STATUS_GAME_BUYFINALUPGRADE) {
-            if(isClickBuy(x,y,2)){
-                pause();
+            if(isClickContinueButton(x, y)){
+                //单击了“继续”按钮
+                resume();
+            }else if(isClickLvOneButton(x,y)){
+                //单击了LV1按钮
+                buyLv1();
+            }else if(isClickLvTwoButton(x,y)){
+                //单击了LV2按钮
+                buyLv2();
             }
         }else if(status == STATUS_GAME_OVER){
             if(isClickRestartButton(x, y)){
@@ -603,16 +745,25 @@ public class GameView extends View {
         return pauseRecF.contains(x, y);
     }
     //是否单击了右上角的商店按钮
-    private boolean isClickBuy(float x, float y,int lv){
-        RectF pauseRecF = getBuyBitmapDstRecF();
-        return pauseRecF.contains(x, y);
+    private boolean isClickBuy(float x, float y){
+        RectF buyRecF = getBuyBitmapDstRecF();
+        return buyRecF.contains(x, y);
     }
 
-    //是否单击了暂停状态下的“继续”那妞
+    //是否单击了暂停状态下的“继续”按妞
     private boolean isClickContinueButton(float x, float y){
         return continueRect.contains((int)x, (int)y);
     }
-
+    //是否单击了购买状态下的“LV1”按钮
+    private boolean isClickLvOneButton(float x, float y){
+        RectF buyRecF = getBuyBitmapDstRecF();
+        return buyRecF.contains(x, y);
+    }
+    //是否单击了购买状态下的“LV2”按钮
+    private boolean isClickLvTwoButton(float x, float y){
+        RectF buyRecF = getBuyBitmapDstRecF();
+        return buyRecF.contains(x, y);
+    }
     //是否单击了GAME OVER状态下的“重新开始”按钮
     private boolean isClickRestartButton(float x, float y){
         return continueRect.contains((int)x, (int)y);
@@ -631,7 +782,25 @@ public class GameView extends View {
         Bitmap buyBitmap = status == STATUS_GAME_STARTED ? bitmaps.get(15) : bitmaps.get(16);
         RectF recF = new RectF();
         recF.left = 750 * density;
-        recF.top = 0 * density;
+        recF.top = 15 * density;
+        recF.right = recF.left + buyBitmap.getWidth();
+        recF.bottom = recF.top + buyBitmap.getHeight();
+        return recF;
+    }
+    private RectF getBuyLvOneBitmapDstRecF(){
+        Bitmap buyBitmap = bitmaps.get(13);
+        RectF recF = new RectF();
+        recF.left = 300 * density;
+        recF.top = 150 * density;
+        recF.right = recF.left + buyBitmap.getWidth();
+        recF.bottom = recF.top + buyBitmap.getHeight();
+        return recF;
+    }
+    private RectF getBuyLvTwoBitmapDstRecF(){
+        Bitmap buyBitmap = bitmaps.get(14);
+        RectF recF = new RectF();
+        recF.left = 500 * density;
+        recF.top = 150 * density;
         recF.right = recF.left + buyBitmap.getWidth();
         recF.bottom = recF.top + buyBitmap.getHeight();
         return recF;
@@ -738,6 +907,17 @@ public class GameView extends View {
             }
         }
         return bulletAwards;
+    }
+    //获取处于活动状态的金币奖励
+    public List<BigMoneyAward> getAliveBigMoneyAwards(){
+        List<BigMoneyAward> bigMoneyAwards = new ArrayList<BigMoneyAward>();
+        for(Sprite s : sprites){
+            if(!s.isDestroyed() && s instanceof BigMoneyAward){
+                BigMoneyAward bigMoneyAward = (BigMoneyAward)s;
+                bigMoneyAwards.add(bigMoneyAward);
+            }
+        }
+        return bigMoneyAwards;
     }
 
     //获取处于活动状态的子弹

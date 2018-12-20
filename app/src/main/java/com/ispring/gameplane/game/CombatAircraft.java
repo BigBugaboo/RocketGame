@@ -15,6 +15,8 @@ public class CombatAircraft extends Sprite {
     private boolean collide = false;//标识战斗机是否被击中
     private int bombAwardCount = 0;//可使用的炸弹数
 
+    private int MoneyAwardCount = 0;//可使用的金币数
+
     //双发子弹相关
     private boolean single = true;//标识是否发的是单一的子弹
     private int doubleTime = 0;//当前已经用双子弹绘制的次数
@@ -154,6 +156,16 @@ public class CombatAircraft extends Sprite {
                     //Game.receiveBombAward();
                 }
             }
+            //检查是否获得金币道具
+            List<BigMoneyAward> bigMoneyAwards = gameView.getAliveBigMoneyAwards();
+            for(BigMoneyAward bigMoneyAward : bigMoneyAwards){
+                Point p = getCollidePointWithOther(bigMoneyAward);
+                if(p != null){
+                    MoneyAwardCount++;
+                    bigMoneyAward.destroy();
+                    //Game.receiveBigMoneyAward();
+                }
+            }
 
             //检查是否获得子弹道具
             List<BulletAward> bulletAwards = gameView.getAliveBulletAwards();
@@ -186,19 +198,40 @@ public class CombatAircraft extends Sprite {
     public int getBombCount(){
         return bombAwardCount;
     }
-
+    //获取可用的金币数量
+    public int getBigMoneyCount(){
+        return MoneyAwardCount;
+    }
     //战斗机使用炸弹
     public void bomb(GameView gameView){
-        if(collide || isDestroyed()){
+        //如果战斗机被撞击了或销毁了，那么不能用炸弹
+        if(collide || isDestroyed()) {
             return;
         }
-
         if(bombAwardCount > 0){
             List<EnemyPlane> enemyPlanes = gameView.getAliveEnemyPlanes();
             for(EnemyPlane enemyPlane : enemyPlanes){
                 enemyPlane.explode(gameView);
             }
             bombAwardCount--;
+        }
+        if(bombAwardCount > 0){
+            List<EnemyPlane> enemyPlanes = gameView.getAliveEnemyPlanes();
+            for(EnemyPlane enemyPlane : enemyPlanes){
+                enemyPlane.explode(gameView);
+            }
+            bombAwardCount--;
+        }
+    }
+    //购买了升级
+    public void buy(GameView gameView) {
+        //如果战斗机被撞击了或销毁了，那么不能升级
+        if(collide || isDestroyed()) {
+            return;
+        }
+        if(bombAwardCount > 0){
+
+            bombAwardCount -= 1;
         }
     }
 
