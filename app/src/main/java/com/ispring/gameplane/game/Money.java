@@ -27,7 +27,7 @@ public class Money extends AutoSprite {
         super.afterDraw(canvas, paint, gameView);
     }
 
-    //创建爆炸效果后会销毁敌机
+    //添加金币数后，会销毁金币
     public void addMoney(GameView gameView){
         //向GameView中添加得分并销毁金币
         gameView.addMoney(value);

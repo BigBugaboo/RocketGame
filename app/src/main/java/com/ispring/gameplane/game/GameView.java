@@ -1,6 +1,8 @@
 package com.ispring.gameplane.game;
 
 import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -60,7 +62,7 @@ public class GameView extends View {
     private  int rocket_Status = 0;
     private long frame = 0;//总共绘制的帧数
     private long score = 0;//总得分
-    private int money = 0;
+    private int money = 0;//金币数量
     private float fontSize = 12;//默认的字体大小，用于绘制左上角的文本
     private float fontSize2 = 20;//用于在Game Over的时候绘制Dialog中的文本
     private float borderSize = 2;//Game Over的Dialog的边框
@@ -195,12 +197,37 @@ public class GameView extends View {
         }else if(status == STATUS_GAME_BUYUPGRADE){
             drawGameBuy(canvas);
         }else if(status == STATUS_GAME_BUYLV_1){
-            BuyLvOne(canvas);
+            if(money >= 200){
+                money -= 200;
+                BuyLvOne(canvas);
+            }else{
+                BuyError(canvas);
+            }
         }else if(status == STATUS_GAME_BUYLV_2){
-            BuyLvTwo(canvas);
+            if(money >= 400){
+                money -= 400;
+                BuyLvTwo(canvas);
+            }else{
+                BuyError(canvas);
+            }
         }else if(status == STATUS_GAME_OVER){
             drawGameOver(canvas);
         }
+    }
+    //购买失败
+    private void BuyError(Canvas canvas){
+        status = STATUS_GAME_STARTED;
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("确认" ) ;
+        builder.setMessage("来啦！老弟，可惜钱不够呀！继续努力吧！" ) ;
+        builder.setPositiveButton("知道了", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.show();
+        postInvalidate();
     }
     //购买一级飞机
     private void  BuyLvOne(Canvas canvas){
@@ -384,9 +411,12 @@ public class GameView extends View {
            rectLvOne.bottom = h3 - rectLvOne.top;
            canvas.drawRect(rectLvOne, paint);
            //绘制商店的LV1物品
-           Bitmap OneBitmap = bitmaps.get(13);
-           canvas.drawBitmap(OneBitmap, rectLvOne.left, rectLvOne.top, paint);
-           canvas.drawText("等级 1", w2 / 3, (h3 - fontSize2) / 2 + fontSize2, textPaint);
+           Bitmap OneBitmap = bitmaps.get(13);  //LV1飞机
+           Bitmap MoneyBitmap = bitmaps.get(18);    //金币
+           canvas.drawBitmap(OneBitmap, (3 * rectLvOne.left+rectLvOne.right)/4, (3 * rectLvOne.top+rectLvOne.bottom)/4, paint);
+           canvas.drawText("等级 1", w2 / 3, (h3 - fontSize2) / 2 + fontSize2 - 10, textPaint);
+           canvas.drawBitmap(MoneyBitmap,2*w2 / 3, (rectLvOne.top+rectLvOne.bottom)/2, paint);
+           canvas.drawText("200个", 2*w2 / 3, (rectLvOne.top+rectLvOne.bottom)/2, textPaint);
            BuyOneRect = new Rect(rectLvOne);
            BuyOneRect.left = w1 + rectLvOne.left;
            BuyOneRect.right = BuyOneRect.left + buybuttonWidth;
@@ -394,24 +424,27 @@ public class GameView extends View {
            BuyOneRect.bottom = BuyOneRect.top + buybuttonHeight;
        }else if(rocket_Status == 1){
            //绘制LV2物品按钮边框
-           Rect rectLvTwop = new Rect();
-           rectLvTwop.left = (w2 - buybuttonWidth)/2;
-           rectLvTwop.right = w2 - rectLvTwop.left;
-           rectLvTwop.top = ( h3- buybuttonHeight) / 2;
-           rectLvTwop.bottom = h3 - rectLvTwop.top;
-           canvas.drawRect(rectLvTwop, paint);
+           Rect rectLvTwo = new Rect();
+           rectLvTwo.left = (w2 - buybuttonWidth)/2;
+           rectLvTwo.right = w2 - rectLvTwo.left;
+           rectLvTwo.top = ( h3- buybuttonHeight) / 2;
+           rectLvTwo.bottom = h3 - rectLvTwo.top;
+           canvas.drawRect(rectLvTwo, paint);
            //绘制商店的LV2物品
-           Bitmap TwoBitmap = bitmaps.get(14);
-           canvas.drawBitmap(TwoBitmap, rectLvTwop.left, rectLvTwop.top, paint);
+           Bitmap TwoBitmap = bitmaps.get(14);  //LV2飞机
+           Bitmap MoneyBitmap = bitmaps.get(18);    //金币
+           canvas.drawBitmap(TwoBitmap, (3 * rectLvTwo.left+rectLvTwo.right)/4, (3 * rectLvTwo.top+rectLvTwo.bottom)/4, paint);
            canvas.drawText("等级 2", w2 / 3, (h3 - fontSize2) / 2 + fontSize2, textPaint);
-           BuyTwoRect = new Rect(rectLvTwop);
-           BuyTwoRect.left = w1 + rectLvTwop.left;
+           canvas.drawBitmap(MoneyBitmap,2*w2 / 3, (rectLvTwo.top+rectLvTwo.bottom)/2, paint);
+           canvas.drawText("400个", 2*w2 / 3, (rectLvTwo.top+rectLvTwo.bottom)/2, textPaint);
+           BuyTwoRect = new Rect(rectLvTwo);
+           BuyTwoRect.left = w1 + rectLvTwo.left;
            BuyTwoRect.right = BuyTwoRect.left + buybuttonWidth;
-           BuyTwoRect.top = h1 + h2 + rectLvTwop.top;
+           BuyTwoRect.top = h1 + h2 + rectLvTwo.top;
            BuyTwoRect.bottom = BuyTwoRect.top + buybuttonHeight;
        }else{
            //绘制顶级购买商店状态
-           canvas.drawText("已经购买所有升级！！", w2 / 3, (h3 - fontSize2) / 2 + fontSize2, textPaint);
+           canvas.drawText("已经购买所有升级！！", w2 / 2, (h3 - fontSize2) / 2 + fontSize2, textPaint);
        }
         //绘制"购买等级"下面的线
         canvas.translate(0, h3);
@@ -663,7 +696,7 @@ public class GameView extends View {
             if(touchType == TOUCH_MOVE){
                 if(combatAircraft != null){
 //                    combatAircraft.centerTo(touchX, touchY);
-                    if(touchX < width/2){
+                    if(touchX <= width/2){
                         rocketWidth -= verticalSpeed;
                         combatAircraft.centerTo(rocketWidth,rocketHeight);
                     }else{
@@ -709,6 +742,8 @@ public class GameView extends View {
     private int resolveTouchType(MotionEvent event){
         int touchType = -1;
         int action = event.getAction();
+        float lastX = touchX;
+        float lastY = touchY;
         touchX = event.getX();
         touchY = event.getY();
         if(action == MotionEvent.ACTION_MOVE){
@@ -799,16 +834,6 @@ public class GameView extends View {
                 //单击了LV2按钮
                 buyLv2();
             }
-        }else if(status == STATUS_GAME_BUYLV_1) {
-            if (isClickLvOneButton(x, y)) {
-                //单击了LV1按钮
-                resume();
-            }
-        }else if(status == STATUS_GAME_BUYLV_2) {
-            if (isClickLvTwoButton(x, y)) {
-                //单击了LV2按钮
-                resume();
-            }
         }else if(status == STATUS_GAME_OVER){
             if(isClickRestartButton(x, y)){
                 //单击了“重新开始”按钮
@@ -857,8 +882,8 @@ public class GameView extends View {
     private RectF getBuyBitmapDstRecF(){
         Bitmap buyBitmap = status == STATUS_GAME_STARTED ? bitmaps.get(15) : bitmaps.get(16);
         RectF recF = new RectF();
-        recF.left = 800 * density;
-        recF.top = 15 * density;
+        recF.left = width - buyBitmap.getWidth();
+        recF.top = buyBitmap.getHeight();
         recF.right = recF.left + buyBitmap.getWidth();
         recF.bottom = recF.top + buyBitmap.getHeight();
         return recF;
