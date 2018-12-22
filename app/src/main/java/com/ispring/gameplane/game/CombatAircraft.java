@@ -15,7 +15,7 @@ public class CombatAircraft extends Sprite {
     private boolean collide = false;//标识战斗机是否被击中
     private int bombAwardCount = 0;//可使用的炸弹数
 
-    private int MoneyAwardCount = 0;//可使用的金币数
+    private int MoneyCount = 0;//可使用的金币数
 
     //双发子弹相关
     private boolean single = true;//标识是否发的是单一的子弹
@@ -125,6 +125,17 @@ public class CombatAircraft extends Sprite {
             }
         }
 
+        //检查是否获得金币
+        List<Money> moneyAwards = gameView.getAliveMoneyPlanes();
+        for(Money money : moneyAwards){
+            Point p = getCollidePointWithOther(money);
+            if(p != null){
+                MoneyCount++;
+                money.addMoney(gameView);
+                break;
+            }
+        }
+
         //beginFlushFrame初始值为0，表示没有进入闪烁模式
         //如果beginFlushFrame大于0，表示要在第如果beginFlushFrame帧进入闪烁模式
         if(beginFlushFrame > 0){
@@ -154,16 +165,6 @@ public class CombatAircraft extends Sprite {
                     bombAwardCount++;
                     bombAward.destroy();
                     //Game.receiveBombAward();
-                }
-            }
-            //检查是否获得金币道具
-            List<BigMoneyAward> bigMoneyAwards = gameView.getAliveBigMoneyAwards();
-            for(BigMoneyAward bigMoneyAward : bigMoneyAwards){
-                Point p = getCollidePointWithOther(bigMoneyAward);
-                if(p != null){
-                    MoneyAwardCount++;
-                    bigMoneyAward.destroy();
-                    //Game.receiveBigMoneyAward();
                 }
             }
 
@@ -197,10 +198,6 @@ public class CombatAircraft extends Sprite {
     //获取可用的炸弹数量
     public int getBombCount(){
         return bombAwardCount;
-    }
-    //获取可用的金币数量
-    public int getBigMoneyCount(){
-        return MoneyAwardCount;
     }
     //战斗机使用炸弹
     public void bomb(GameView gameView){
