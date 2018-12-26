@@ -3,7 +3,7 @@ package com.ispring.gameplane.game;
 import android.graphics.Bitmap;
 
 /**
- * 炸弹奖励
+ * 核弹奖励
  */
 public class BombAward extends Award {
 

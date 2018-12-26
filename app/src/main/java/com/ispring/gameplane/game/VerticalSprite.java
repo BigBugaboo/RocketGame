@@ -8,11 +8,11 @@ import android.graphics.RectF;
 /**
  * 走直线的Sprite类，其位置只能直上直下
  */
-public class AutoSprite extends Sprite {
+public class VerticalSprite extends Sprite {
     //每帧移动的像素数,以向下为正
     private float speed = 2;
 
-    public AutoSprite(Bitmap bitmap){
+    public VerticalSprite(Bitmap bitmap){
         super(bitmap);
     }
 

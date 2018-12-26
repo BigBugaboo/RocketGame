@@ -3,11 +3,10 @@ package com.ispring.gameplane.game;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Point;
-
-import java.util.List;
-
-public class Money extends AutoSprite {
+/**
+ * 金钱类
+ */
+public class Money extends VerticalSprite {
 
     private int value = 1;//钱的价值
 

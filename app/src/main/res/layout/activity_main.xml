@@ -55,7 +55,7 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/rocket_go"
+        android:src="@drawable/maxrocket"
         android:layout_gravity="center"/>
     <TextView
         android:layout_width="wrap_content"
@@ -70,19 +70,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/small"
+            android:src="@drawable/smallwarship"
             android:layout_gravity="center"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/middle"
+            android:src="@drawable/middlewarship"
             android:layout_gravity="center"/>
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/big"
+            android:src="@drawable/bigwarship"
+            android:layout_gravity="center"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/superwarship"
+            android:layout_gravity="center"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/xwarship"
             android:layout_gravity="center"/>
     </LinearLayout>
     <TextView

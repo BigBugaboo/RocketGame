@@ -11,11 +11,10 @@ import java.util.List;
 /**
  * 战斗机类，可以通过交互改变位置
  */
-public class CombatAircraft extends Sprite {
+public class Rocket extends Sprite {
     private boolean collide = false;//标识战斗机是否被击中
     private int bombAwardCount = 0;//可使用的炸弹数
 
-    private int MoneyCount = 0;//可使用的金币数
 
     //双发子弹相关
     private boolean single = true;//标识是否发的是单一的子弹
@@ -28,7 +27,7 @@ public class CombatAircraft extends Sprite {
     private int flushFrequency = 16;//在闪烁的时候，每隔16帧转变战斗机的可见性
     private int maxFlushTime = 10;//最大闪烁次数
 
-    public CombatAircraft(Bitmap bitmap){
+    public Rocket(Bitmap bitmap){
         super(bitmap);
     }
 
@@ -104,6 +103,7 @@ public class CombatAircraft extends Sprite {
     }
 
     //战斗机如果被击中，执行爆炸效果
+    //战斗机兼到金币，删除金币
     //具体来说，首先隐藏战斗机，然后创建爆炸效果，爆炸用28帧渲染完成
     //爆炸效果完全渲染完成后，爆炸效果消失
     //然后战斗机会进入闪烁模式，战斗机闪烁一定次数后销毁
@@ -114,25 +114,14 @@ public class CombatAircraft extends Sprite {
 
         //在飞机当前还没有被击中时，要判断是否将要被敌机击中
         if(!collide){
-            List<EnemyPlane> enemies = gameView.getAliveEnemyPlanes();
-            for(EnemyPlane enemyPlane : enemies){
-                Point p = getCollidePointWithOther(enemyPlane);
+            List<Warship> enemies = gameView.getAliveEnemyPlanes();
+            for(Warship warship : enemies){
+                Point p = getCollidePointWithOther(warship);
                 if(p != null){
                     //p为战斗机与敌机的碰撞点，如果p不为null，则表明战斗机被敌机击中
                     explode(gameView);
                     break;
                 }
-            }
-        }
-
-        //检查是否获得金币
-        List<Money> moneyAwards = gameView.getAliveMoneyPlanes();
-        for(Money money : moneyAwards){
-            Point p = getCollidePointWithOther(money);
-            if(p != null){
-                MoneyCount++;
-                money.addMoney(gameView);
-                break;
             }
         }
 
@@ -178,6 +167,16 @@ public class CombatAircraft extends Sprite {
                     doubleTime = 0;
                 }
             }
+
+            //检查是否获得金币
+            List<Money> moneyAwards = gameView.getAliveMoneyPlanes();
+            for(Money money : moneyAwards){
+                Point p = getCollidePointWithOther(money);
+                if(p != null){
+                    money.addMoney(gameView);
+                    break;
+                }
+            }
         }
     }
 
@@ -188,10 +187,10 @@ public class CombatAircraft extends Sprite {
             setVisibility(false);
             float centerX = getX() + getWidth() / 2;
             float centerY = getY() + getHeight() / 2;
-            Explosion explosion = new Explosion(gameView.getExplosionBitmap());
-            explosion.centerTo(centerX, centerY);
-            gameView.addSprite(explosion);
-            beginFlushFrame = getFrame() + explosion.getExplodeDurationFrame();
+            Effects effects = new Effects(gameView.getExplosionBitmap());
+            effects.centerTo(centerX, centerY);
+            gameView.addSprite(effects);
+            beginFlushFrame = getFrame() + effects.getExplodeDurationFrame();
         }
     }
 
@@ -206,16 +205,16 @@ public class CombatAircraft extends Sprite {
             return;
         }
         if(bombAwardCount > 0){
-            List<EnemyPlane> enemyPlanes = gameView.getAliveEnemyPlanes();
-            for(EnemyPlane enemyPlane : enemyPlanes){
-                enemyPlane.explode(gameView);
+            List<Warship> warships = gameView.getAliveEnemyPlanes();
+            for(Warship warship : warships){
+                warship.explode(gameView);
             }
             bombAwardCount--;
         }
         if(bombAwardCount > 0){
-            List<EnemyPlane> enemyPlanes = gameView.getAliveEnemyPlanes();
-            for(EnemyPlane enemyPlane : enemyPlanes){
-                enemyPlane.explode(gameView);
+            List<Warship> warships = gameView.getAliveEnemyPlanes();
+            for(Warship warship : warships){
+                warship.explode(gameView);
             }
             bombAwardCount--;
         }

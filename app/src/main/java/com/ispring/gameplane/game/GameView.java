@@ -27,28 +27,10 @@ public class GameView extends View {
 
     private Paint paint;
     private Paint textPaint;
-    private CombatAircraft combatAircraft = null;
+    private Rocket rocket = null;
     private List<Sprite> sprites = new ArrayList<Sprite>();
-    private List<Sprite> spritesNeedAdded = new ArrayList<Sprite>();
-    //0:combatAircraft
-    //1:explosion
-    //2:yellowBullet
-    //3:blueBullet
-    //4:smallEnemyPlane
-    //5:middleEnemyPlane
-    //6:bigEnemyPlane
-    //7:bombAward
-    //8:bulletAward
-    //9:pause1
-    //10:pause2
-    //11:bomb
-    //12:Boom
-    //13:rocket_win
-    //14:rocket_go
-    //15:buy
-    //16:buy_ing
-    //17.BigMoney
-    //18.money
+   private List<Sprite> spritesNeedAdded = new ArrayList<Sprite>();
+
     private List<Bitmap> bitmaps = new ArrayList<Bitmap>();
     private float density = getResources().getDisplayMetrics().density;//屏幕密度
     public static final int STATUS_GAME_STARTED = 1;//游戏开始
@@ -76,9 +58,9 @@ public class GameView extends View {
     private float height = wm.getDefaultDisplay().getHeight();
     //火箭位置
     private float rocketWidth = width/2;
-    private float rocketHeight =  height - 10;
+    private float rocketHeight = height - 20;
     //火箭属性设置
-    private  float verticalSpeed = 2;
+    private  float verticalSpeed = 5;
     private float horizontalSpeed = 0;
     //触摸事件相关的变量
     private static final int TOUCH_MOVE = 1;//移动
@@ -137,11 +119,14 @@ public class GameView extends View {
     
     private void startWhenBitmapsReady(){
         if(rocket_Status == 0){
-            combatAircraft = new CombatAircraft(bitmaps.get(0));
+            rocket = new Rocket(bitmaps.get(0));
+            verticalSpeed = 5;
         }else if(rocket_Status == 1){
-            combatAircraft = new CombatAircraft(bitmaps.get(13));
+            rocket = new Rocket(bitmaps.get(13));
+            verticalSpeed = 30;
         }else {
-            combatAircraft = new CombatAircraft(bitmaps.get(14));
+            rocket = new Rocket(bitmaps.get(14));
+            verticalSpeed = 40;
         }
         //将游戏设置为开始状态
         status = STATUS_GAME_STARTED;
@@ -229,17 +214,17 @@ public class GameView extends View {
         builder.show();
         postInvalidate();
     }
-    //购买一级飞机
+    //购买一级火箭
     private void  BuyLvOne(Canvas canvas){
         rocket_Status = 1;
-        verticalSpeed = 10;
+        verticalSpeed = 30;
         frame = 0;
         startWhenBitmapsReady();
     }
-    //购买二级飞机
+    //购买二级火箭
     private void  BuyLvTwo(Canvas canvas){
         rocket_Status = 2;
-        verticalSpeed = 40;
+        verticalSpeed = 50;
         frame = 0;
         startWhenBitmapsReady();
     }
@@ -248,11 +233,9 @@ public class GameView extends View {
 
         drawScoreAndBombs(canvas);
 
-        //第一次绘制时，将战斗机移到Canvas最下方，在水平方向的中心
+        //第一次绘制时，将火箭移到Canvas最下方，在水平方向的中心
         if(frame == 0){
-            float centerX = canvas.getWidth() / 2;
-            float centerY = canvas.getHeight() - combatAircraft.getHeight() / 2;
-            combatAircraft.centerTo(centerX, centerY);
+            rocket.centerTo(rocketWidth, rocketHeight);
         }
 
         //将spritesNeedAdded添加到sprites中
@@ -261,7 +244,7 @@ public class GameView extends View {
             spritesNeedAdded.clear();
         }
 
-        //检查战斗机跑到子弹前面的情况
+        //检查火箭跑到子弹前面的情况
         destroyBulletsFrontOfCombatAircraft();
 
         //在绘制之前先移除掉已经被destroyed的Sprite
@@ -273,7 +256,7 @@ public class GameView extends View {
         }
         frame++;
 
-        //遍历sprites，绘制敌机、子弹、金币、奖励、爆炸效果
+        //遍历sprites，绘制敌舰、子弹、金币、奖励、特效
         Iterator<Sprite> iterator = sprites.iterator();
         while (iterator.hasNext()){
             Sprite s = iterator.next();
@@ -290,11 +273,12 @@ public class GameView extends View {
             }
         }
 
-        if(combatAircraft != null){
-            //最后绘制战斗机
-            combatAircraft.draw(canvas, paint, this);
-            if(combatAircraft.isDestroyed()){
-                //如果战斗机被击中销毁了，那么游戏结束
+        if(rocket != null){
+            //最后绘制火箭
+            rocket.centerTo(rocketWidth, rocketHeight);
+            rocket.draw(canvas, paint, this);
+            if(rocket.isDestroyed()){
+                //如果火箭被击中销毁了，那么游戏结束
                 status = STATUS_GAME_OVER;
             }
             //通过调用postInvalidate()方法使得View持续渲染，实现动态效果
@@ -310,8 +294,8 @@ public class GameView extends View {
         for(Sprite s : sprites){
             s.onDraw(canvas, paint, this);
         }
-        if(combatAircraft != null){
-            combatAircraft.onDraw(canvas, paint, this);
+        if(rocket != null){
+            rocket.onDraw(canvas, paint, this);
         }
 
         //绘制Dialog，显示得分
@@ -329,8 +313,8 @@ public class GameView extends View {
         for(Sprite s : sprites){
             s.onDraw(canvas, paint, this);
         }
-        if(combatAircraft != null){
-            combatAircraft.onDraw(canvas, paint, this);
+        if(rocket != null){
+            rocket.onDraw(canvas, paint, this);
         }
 
         //绘制Dialog，显示商店
@@ -411,7 +395,7 @@ public class GameView extends View {
            rectLvOne.bottom = h3 - rectLvOne.top;
            canvas.drawRect(rectLvOne, paint);
            //绘制商店的LV1物品
-           Bitmap OneBitmap = bitmaps.get(13);  //LV1飞机
+           Bitmap OneBitmap = bitmaps.get(13);  //LV1火箭
            Bitmap MoneyBitmap = bitmaps.get(18);    //金币
            canvas.drawBitmap(OneBitmap, (3 * rectLvOne.left+rectLvOne.right)/4, (3 * rectLvOne.top+rectLvOne.bottom)/4, paint);
            canvas.drawText("等级 1", w2 / 3, (h3 - fontSize2) / 2 + fontSize2 - 10, textPaint);
@@ -431,7 +415,7 @@ public class GameView extends View {
            rectLvTwo.bottom = h3 - rectLvTwo.top;
            canvas.drawRect(rectLvTwo, paint);
            //绘制商店的LV2物品
-           Bitmap TwoBitmap = bitmaps.get(14);  //LV2飞机
+           Bitmap TwoBitmap = bitmaps.get(14);  //LV2火箭
            Bitmap MoneyBitmap = bitmaps.get(18);    //金币
            canvas.drawBitmap(TwoBitmap, (3 * rectLvTwo.left+rectLvTwo.right)/4, (3 * rectLvTwo.top+rectLvTwo.bottom)/4, paint);
            canvas.drawText("等级 2", w2 / 3, (h3 - fontSize2) / 2 + fontSize2, textPaint);
@@ -513,11 +497,11 @@ public class GameView extends View {
         //paint.setStrokeCap(Paint.Cap.ROUND);
         paint.setStrokeJoin(Paint.Join.ROUND);
         canvas.drawRect(rect1, paint);
-        //绘制文本"飞机大战分数"
+        //绘制文本"火箭飞天分数"
         textPaint.setTextSize(fontSize2);
         textPaint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText("飞机大战分数", w2 / 2, (h2 - fontSize2) / 2 + fontSize2, textPaint);
-        //绘制"飞机大战分数"下面的横线
+        canvas.drawText("火箭飞天分数", w2 / 2, (h2 - fontSize2) / 2 + fontSize2, textPaint);
+        //绘制"火箭飞天分数"下面的横线
         canvas.translate(0, h2);
         canvas.drawLine(0, 0, w2, 0, paint);
         //绘制实际的分数
@@ -569,8 +553,8 @@ public class GameView extends View {
         canvas.drawText(score + "", scoreLeft, scoreTop, textPaint);
 
         //绘制左下角
-        if(combatAircraft != null && !combatAircraft.isDestroyed() || money > 0){
-            int bombCount = combatAircraft.getBombCount();
+        if(rocket != null && !rocket.isDestroyed() || money > 0){
+            int bombCount = rocket.getBombCount();
             int bigMoneyCount = money;
             if(bombCount > 0) {
                 //绘制左下角的炸弹
@@ -585,23 +569,23 @@ public class GameView extends View {
             if(bigMoneyCount > 0){
                 //绘制左下角的金币
                 Bitmap bigMoneyBitmap = bitmaps.get(18);
-                float bigMoneyTop = canvas.getHeight() - bigMoneyBitmap.getHeight();
-                canvas.drawBitmap(bigMoneyBitmap, 25, bigMoneyTop, paint);
+                float bigMoneyTop = canvas.getHeight() - bigMoneyBitmap.getHeight() - 60 * density;
+                canvas.drawBitmap(bigMoneyBitmap, 0, bigMoneyTop, paint);
                 //绘制左下角的金币数量
-                float bigMoneyCountLeft = bigMoneyBitmap.getWidth() + 10 * density;
+                float bigMoneyCountLeft = bigMoneyBitmap.getWidth() + 20 * density;
                 float bigMoneyCountTop = fontSize + bigMoneyTop + bigMoneyBitmap.getHeight() / 2 - fontSize / 2;
                 canvas.drawText("X " + bigMoneyCount, bigMoneyCountLeft, bigMoneyCountTop, textPaint);
             }
         }
     }
 
-    //检查战斗机跑到子弹前面的情况
+    //检查火箭跑到子弹前面的情况
     private void destroyBulletsFrontOfCombatAircraft(){
-        if(combatAircraft != null){
-            float aircraftY = combatAircraft.getY();
+        if(rocket != null){
+            float aircraftY = rocket.getY();
             List<Bullet> aliveBullets = getAliveBullets();
             for(Bullet bullet : aliveBullets){
-                //如果战斗机跑到了子弹前面，那么就销毁子弹
+                //如果火箭跑到了子弹前面，那么就销毁子弹
                 if(aircraftY <= bullet.getY()){
                     bullet.destroy();
                 }
@@ -630,39 +614,41 @@ public class GameView extends View {
             //发送道具奖品
             if((callTime + 1) % 50 == 0){
                 //发送炸弹
-                sprite = new BombAward(bitmaps.get(7));
+                sprite = new BombAward(bitmaps.get(12));
             }
-            else if((callTime + 1) % 50 == 1){
+            else{
                 //发送双子弹
                 sprite = new BulletAward(bitmaps.get(8));
             }
         }
         else{
-            //发送敌机
-            int[] nums = {0,0,0,0,0,1,0,0,1,0,0,0,0,1,1,1,1,1,1,2,3};
+            //发送舰
+            int[] nums = {0,0,0,2,5,5,0,0,1,0,0,1,0,5,0,0,3,2,0,1,1,1,1,1,1,2,3,5,5,4};
             int index = (int)Math.floor(nums.length*Math.random());
             int type = nums[index];
             if(type == 0){
-                //小敌机
-                sprite = new SmallEnemyPlane(bitmaps.get(4));
+                //小战舰
+                sprite = new SmallWarship(bitmaps.get(4));
             }
             else if(type == 1){
-                //中敌机
-                sprite = new MiddleEnemyPlane(bitmaps.get(5));
+                //中战舰
+                sprite = new MiddleWarship(bitmaps.get(5));
             }
-            else if(type == 2){
-                //大敌机
-                sprite = new BigEnemyPlane(bitmaps.get(6));
-            }else if(type == 3){
+            else if(type == 2) {
+                //大战舰
+                sprite = new BigWarship(bitmaps.get(6));
+            }
+            else if(type == 3){
+                //超级战舰
+                sprite = new SuperWarship(bitmaps.get(19));
+            }else if(type == 4 && score > 1000000){
+                //X战舰
+                sprite = new XWarship(bitmaps.get(20));
+            }else if(type == 5){
                 //大金币
                 sprite = new Gold(bitmaps.get(17));
             }
-            if(type != 2){
-                if(Math.random() < 0.33){
-                    speed = 4;
-                }
-            }
-            if(type != 3){
+            if(type != 0 || type != 1 || type != 2 || type != 3){
                 if(Math.random() < 0.33){
                     speed = 4;
                 }
@@ -676,9 +662,9 @@ public class GameView extends View {
             float y = -spriteHeight;
             sprite.setX(x);
             sprite.setY(y);
-            if(sprite instanceof AutoSprite){
-                AutoSprite autoSprite = (AutoSprite)sprite;
-                autoSprite.setSpeed(speed);
+            if(sprite instanceof VerticalSprite){
+                VerticalSprite verticalSprite = (VerticalSprite)sprite;
+                verticalSprite.setSpeed(speed);
             }
             addSprite(sprite);
         }
@@ -694,21 +680,21 @@ public class GameView extends View {
         int touchType = resolveTouchType(event);
         if(status == STATUS_GAME_STARTED){
             if(touchType == TOUCH_MOVE){
-                if(combatAircraft != null){
-//                    combatAircraft.centerTo(touchX, touchY);
+                if(rocket != null){
+//                    rocket.centerTo(touchX, touchY);
                     if(touchX <= width/2){
                         rocketWidth -= verticalSpeed;
-                        combatAircraft.centerTo(rocketWidth,rocketHeight);
+                        rocket.centerTo(rocketWidth,rocketHeight);
                     }else{
                         rocketWidth += verticalSpeed;
-                        combatAircraft.centerTo(rocketWidth,rocketHeight);
+                        rocket.centerTo(rocketWidth,rocketHeight);
                     }
                 }
             }else if(touchType == TOUCH_DOUBLE_CLICK){
                 if(status == STATUS_GAME_STARTED){
-                    if(combatAircraft != null){
-                        //双击会使得战斗机使用炸弹
-                        combatAircraft.bomb(this);
+                    if(rocket != null){
+                        //双击会使得火箭使用炸弹
+                        rocket.bomb(this);
                     }
                 }
             }
@@ -882,8 +868,8 @@ public class GameView extends View {
     private RectF getBuyBitmapDstRecF(){
         Bitmap buyBitmap = status == STATUS_GAME_STARTED ? bitmaps.get(15) : bitmaps.get(16);
         RectF recF = new RectF();
-        recF.left = width - buyBitmap.getWidth();
-        recF.top = buyBitmap.getHeight();
+        recF.left = 15 * density;
+        recF.top = 50 * density;
         recF.right = recF.left + buyBitmap.getWidth();
         recF.bottom = recF.top + buyBitmap.getHeight();
         return recF;
@@ -901,13 +887,13 @@ public class GameView extends View {
         //重置得分
         score = 0;
 
-        //销毁战斗机
-        if(combatAircraft != null){
-            combatAircraft.destroy();
+        //销毁火箭
+        if(rocket != null){
+            rocket.destroy();
         }
-        combatAircraft = null;
+        rocket = null;
 
-        //销毁敌机、子弹、奖励、爆炸
+        //销毁敌舰、子弹、奖励、特效
         for(Sprite s : sprites){
             s.destroy();
         }
@@ -961,15 +947,15 @@ public class GameView extends View {
     }
 
     //获取处于活动状态的敌人
-    public List<EnemyPlane> getAliveEnemyPlanes(){
-        List<EnemyPlane> enemyPlanes = new ArrayList<EnemyPlane>();
+    public List<Warship> getAliveEnemyPlanes(){
+        List<Warship> warships = new ArrayList<Warship>();
         for(Sprite s : sprites){
-            if(!s.isDestroyed() && s instanceof EnemyPlane){
-                EnemyPlane sprite = (EnemyPlane)s;
-                enemyPlanes.add(sprite);
+            if(!s.isDestroyed() && s instanceof Warship){
+                Warship sprite = (Warship)s;
+                warships.add(sprite);
             }
         }
-        return enemyPlanes;
+        return warships;
     }
 
     //获取处于活动状态的金币

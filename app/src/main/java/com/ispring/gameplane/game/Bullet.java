@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 /**
  * 子弹类，从下向上沿直线移动
  */
-public class Bullet extends AutoSprite {
+public class Bullet extends VerticalSprite {
 
     public Bullet(Bitmap bitmap){
         super(bitmap);

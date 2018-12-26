@@ -5,9 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 /**
- * 奖品
+ * 奖励
  */
-public class Award extends AutoSprite {
+public class Award extends VerticalSprite {
     public static int STATUS_DOWN1 = 1;
     public static int STATUS_UP2 = 2;
     public static int STATUS_DOWN3 = 3;

@@ -10,12 +10,12 @@ import java.util.List;
 /**
  * 敌机类，从上向下沿直线运动
  */
-public class EnemyPlane extends AutoSprite {
+public class Warship extends VerticalSprite {
 
     private int power = 1;//敌机的抗打击能力
     private int value = 0;//打一个敌机的得分
 
-    public EnemyPlane(Bitmap bitmap){
+    public Warship(Bitmap bitmap){
         super(bitmap);
     }
 
@@ -67,9 +67,9 @@ public class EnemyPlane extends AutoSprite {
         float centerX = getX() + getWidth() / 2;
         float centerY = getY() + getHeight() / 2;
         Bitmap bitmap = gameView.getExplosionBitmap();
-        Explosion explosion = new Explosion(bitmap);
-        explosion.centerTo(centerX, centerY);
-        gameView.addSprite(explosion);
+        Effects effects = new Effects(bitmap);
+        effects.centerTo(centerX, centerY);
+        gameView.addSprite(effects);
 
         //创建爆炸效果完成后，向GameView中添加得分并销毁敌机
         gameView.addScore(value);

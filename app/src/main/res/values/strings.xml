@@ -5,9 +5,9 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
-    <string name="info">点击屏幕左右控制火箭移动，长按加快移动。</string>
-    <string name="award">获取到这个可释放一次全屏秒杀</string>
-    <string name="warn">不一定升级就好</string>
-    <string name="danger">碰到敌人会死的哇</string>
+    <string name="info">点击屏幕左右控制火箭移动，滑动两侧加快移动。</string>
+    <string name="award">获取到这个可释放一次全屏秒杀，双击触发！</string>
+    <string name="warn">这是顶级战机，助你一飞冲天，要钱的哦！</string>
+    <string name="danger">碰到敌人，你会原地爆炸！</string>
 
 </resources>
