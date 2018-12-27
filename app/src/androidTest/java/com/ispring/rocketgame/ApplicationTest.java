@@ -1,4 +1,4 @@
-package com.ispring.gameplane;
+package com.ispring.rocketgame;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

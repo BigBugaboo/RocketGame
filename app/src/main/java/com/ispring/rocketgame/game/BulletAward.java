@@ -1,4 +1,4 @@
-package com.ispring.gameplane.game;
+package com.ispring.rocketgame.game;
 
 import android.graphics.Bitmap;
 

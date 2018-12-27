@@ -1,4 +1,4 @@
-package com.ispring.gameplane.game;
+package com.ispring.rocketgame.game;
 
 import android.content.Context;
 import android.app.AlertDialog;
@@ -16,7 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-import com.ispring.gameplane.R;
+import com.ispring.rocketgame.R;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -203,7 +203,7 @@ public class GameView extends View {
     private void BuyError(Canvas canvas){
         status = STATUS_GAME_STARTED;
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("确认" ) ;
+        builder.setTitle("没钱！" ) ;
         builder.setMessage("来啦！老弟，可惜钱不够呀！继续努力吧！" ) ;
         builder.setPositiveButton("知道了", new DialogInterface.OnClickListener() {
             @Override
@@ -681,7 +681,7 @@ public class GameView extends View {
         if(status == STATUS_GAME_STARTED){
             if(touchType == TOUCH_MOVE){
                 if(rocket != null){
-//                    rocket.centerTo(touchX, touchY);
+                    //如果x为左边区域，向左边移动verticalSpeed，或者右边
                     if(touchX <= width/2){
                         rocketWidth -= verticalSpeed;
                         rocket.centerTo(rocketWidth,rocketHeight);
@@ -893,7 +893,7 @@ public class GameView extends View {
         }
         rocket = null;
 
-        //销毁敌舰、子弹、奖励、特效
+        //销毁敌舰、子弹、奖励、特效、金币
         for(Sprite s : sprites){
             s.destroy();
         }

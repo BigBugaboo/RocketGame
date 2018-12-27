@@ -1,4 +1,4 @@
-package com.ispring.gameplane.game;
+package com.ispring.rocketgame.game;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,11 +9,11 @@ import android.graphics.RectF;
 import java.util.List;
 
 /**
- * 战斗机类，可以通过交互改变位置
+ * 火箭类，可以通过交互改变位置
  */
 public class Rocket extends Sprite {
-    private boolean collide = false;//标识战斗机是否被击中
-    private int bombAwardCount = 0;//可使用的炸弹数
+    private boolean collide = false;//标识火箭是否被击中
+    private int bombAwardCount = 1;//可使用的核弹数
 
 
     //双发子弹相关
@@ -22,9 +22,9 @@ public class Rocket extends Sprite {
     private int maxDoubleTime = 140;//使用双子弹最多绘制的次数
 
     //被撞击后闪烁相关
-    private long beginFlushFrame = 0;//要在第beginFlushFrame帧开始闪烁战斗机
+    private long beginFlushFrame = 0;//要在第beginFlushFrame帧开始闪烁火箭
     private int flushTime = 0;//已经闪烁的次数
-    private int flushFrequency = 16;//在闪烁的时候，每隔16帧转变战斗机的可见性
+    private int flushFrequency = 16;//在闪烁的时候，每隔16帧转变火箭的可见性
     private int maxFlushTime = 10;//最大闪烁次数
 
     public Rocket(Bitmap bitmap){
@@ -34,7 +34,7 @@ public class Rocket extends Sprite {
     @Override
     protected void beforeDraw(Canvas canvas, Paint paint, GameView gameView) {
         if(!isDestroyed()){
-            //确保战斗机完全位于Canvas范围内
+            //确保火箭完全位于Canvas范围内
             validatePosition(canvas);
 
             //每隔7帧发射子弹
@@ -44,7 +44,7 @@ public class Rocket extends Sprite {
         }
     }
 
-    //确保战斗机完全位于Canvas范围内
+    //确保火箭完全位于Canvas范围内
     private void validatePosition(Canvas canvas){
         if(getX() < 0){
             setX(0);
@@ -65,7 +65,7 @@ public class Rocket extends Sprite {
 
     //发射子弹
     public void fight(GameView gameView){
-        //如果战斗机被撞击了或销毁了，那么不会发射子弹
+        //如果火箭被撞击了或销毁了，那么不会发射子弹
         if(collide || isDestroyed()){
             return;
         }
@@ -102,23 +102,23 @@ public class Rocket extends Sprite {
         }
     }
 
-    //战斗机如果被击中，执行爆炸效果
-    //战斗机兼到金币，删除金币
-    //具体来说，首先隐藏战斗机，然后创建爆炸效果，爆炸用28帧渲染完成
+    //火箭如果被击中，执行爆炸效果
+    //火箭兼到金币，删除金币
+    //具体来说，首先隐藏火箭，然后创建爆炸效果，爆炸用28帧渲染完成
     //爆炸效果完全渲染完成后，爆炸效果消失
-    //然后战斗机会进入闪烁模式，战斗机闪烁一定次数后销毁
+    //然火箭会进入闪烁模式，火箭闪烁一定次数后销毁
     protected void afterDraw(Canvas canvas, Paint paint, GameView gameView){
         if(isDestroyed()){
             return;
         }
 
-        //在飞机当前还没有被击中时，要判断是否将要被敌机击中
+        //在火箭当前还没有被击中时，要判断是否将要被敌舰击中
         if(!collide){
             List<Warship> enemies = gameView.getAliveEnemyPlanes();
             for(Warship warship : enemies){
                 Point p = getCollidePointWithOther(warship);
                 if(p != null){
-                    //p为战斗机与敌机的碰撞点，如果p不为null，则表明战斗机被敌机击中
+                    //p为火箭与敌舰的碰撞点，如果p不为null，则表明火箭被敌舰击中
                     explode(gameView);
                     break;
                 }
@@ -129,14 +129,14 @@ public class Rocket extends Sprite {
         //如果beginFlushFrame大于0，表示要在第如果beginFlushFrame帧进入闪烁模式
         if(beginFlushFrame > 0){
             long frame = getFrame();
-            //如果当前帧数大于等于beginFlushFrame，才表示战斗机进入销毁前的闪烁状态
+            //如果当前帧数大于等于beginFlushFrame，才表示火箭进入销毁前的闪烁状态
             if(frame >= beginFlushFrame){
                 if((frame - beginFlushFrame) % flushFrequency == 0){
                     boolean visible = getVisibility();
                     setVisibility(!visible);
                     flushTime++;
                     if(flushTime >= maxFlushTime){
-                        //如果战斗机闪烁的次数超过了最大的闪烁次数，那么销毁战斗机
+                        //如果火箭闪烁的次数超过了最大的闪烁次数，那么销毁火箭
                         destroy();
                         //Game.gameOver();
                     }
@@ -180,7 +180,7 @@ public class Rocket extends Sprite {
         }
     }
 
-    //战斗机爆炸
+    //火箭爆炸
     private void explode(GameView gameView){
         if(!collide){
             collide = true;
@@ -198,9 +198,9 @@ public class Rocket extends Sprite {
     public int getBombCount(){
         return bombAwardCount;
     }
-    //战斗机使用炸弹
+    //火箭使用炸弹
     public void bomb(GameView gameView){
-        //如果战斗机被撞击了或销毁了，那么不能用炸弹
+        //如果火箭被撞击了或销毁了，那么不能用炸弹
         if(collide || isDestroyed()) {
             return;
         }
@@ -210,24 +210,6 @@ public class Rocket extends Sprite {
                 warship.explode(gameView);
             }
             bombAwardCount--;
-        }
-        if(bombAwardCount > 0){
-            List<Warship> warships = gameView.getAliveEnemyPlanes();
-            for(Warship warship : warships){
-                warship.explode(gameView);
-            }
-            bombAwardCount--;
-        }
-    }
-    //购买了升级
-    public void buy(GameView gameView) {
-        //如果战斗机被撞击了或销毁了，那么不能升级
-        if(collide || isDestroyed()) {
-            return;
-        }
-        if(bombAwardCount > 0){
-
-            bombAwardCount -= 1;
         }
     }
 

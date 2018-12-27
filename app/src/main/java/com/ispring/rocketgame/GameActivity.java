@@ -1,10 +1,10 @@
-package com.ispring.gameplane;
+package com.ispring.rocketgame;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
-import com.ispring.gameplane.game.GameView;
+import com.ispring.rocketgame.game.GameView;
 
 
 public class GameActivity extends Activity {
